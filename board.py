@@ -115,5 +115,5 @@ class Message(Storm):
     user_id = Int()
     
     thread = Reference(thread_id, "Thread.id")
-    user = Reference(poster_id, "User.id")
+    user = Reference(user_id, "User.id")
 
