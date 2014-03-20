@@ -3,7 +3,7 @@ Model for Boards and Threads on the Forum
 """
 
 import datetime
-from storm.locals import Storm, Int, DateTime, Unicode
+from storm.locals import Storm, Int, DateTime, Unicode, ReferenceSet, Reference
 
 from wld.db import getStore
 from wld.perms import BoardPerms, _LinkBoardPerms

@@ -2,7 +2,7 @@
 I model a website user
 """
 
-from storm.locals import Storm, Int, Unicode, DateTime
+from storm.locals import Storm, Int, Unicode, DateTime, ReferenceSet
 
 from wld.board import BoardPerms
 from wld.db import getStore
