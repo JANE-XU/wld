@@ -33,6 +33,41 @@ class Board(Storm):
     perms = ReferenceSet(id, "_LinkBoardPerms.board_id", "_LinkBoardPerms.perm_id", "BoardPerms.id")
 
 
+    def getJSON(self, extra=False):
+        """
+        Get a JSON representation of my attributes and other useful things
+
+        @param extra: Determines if additional data from other classes will be added
+        """
+        return_json = {
+            'id': self.id,
+            'created': self.created,
+            'name': self.name,
+            'description': self.description,
+        }
+
+        if extra:
+            #Other useful things
+            threads = self.threads
+            thread_count = threads.count()
+
+            messages_count = 0
+            for thread in threads:
+                messages = thread.messages.count()
+                messages_count = messages_count + messages
+
+            extra_data = {
+                'topics': thread_count,
+                'messages': messages_count
+            }
+
+            return_json.update(extra_data)
+
+        return return_json
+
+        
+        
+
     def addPermByName(self, perm_name):
         """
         Tie me to a BoardPerm by it's name.
@@ -91,6 +126,29 @@ class Thread(Storm):
     board = Reference(board_id, "Board.id")
     messages = ReferenceSet(id, "Message.thread_id")
     user = Reference(user_id, "User.id")
+
+
+    def getJSON(self, extra=False):
+        """
+        Return a json object of my attributes and other useful stuff
+
+        @param extra: Whether info from other classes will be included in the json
+        """
+        return_json = {
+            'id': self.id,
+            'created': self.created,
+            'name': self.name,
+        }
+
+        if extra:
+            user = store.find(User, User.id == self.user_id).one()
+            messages = self.messages
+            extra_data = {
+                'username': user.username,
+            }
+            return_json.update(extra_data)
+
+        return return_json
 
 
 
