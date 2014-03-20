@@ -2,6 +2,7 @@
 Model for Boards and Threads on the Forum
 """
 
+import datetime
 from storm.locals import Storm, Int, DateTime, Unicode
 
 from wld.db import getStore
@@ -24,7 +25,7 @@ class Board(Storm):
     """
     __storm_table__ = 'boards'
     id = Int(primary=True)
-    created = DateTime()
+    created = DateTime(default=datetime.datetime.now())
     name = Unicode(validator=unicoder)
     description = Unicode(validator=unicoder)
     
@@ -82,11 +83,12 @@ class Thread(Storm):
     """
     __storm_table__ = 'boards_threads'
     id = Int(primary=True)
-    created = DateTime()
+    created = DateTime(default=datetime.datetime.now())
     name = Unicode(validator=unicoder)
     board_id = Int()
     user_id = Int()
 
+    board = Reference(board_id, "Board.id")
     messages = ReferenceSet(id, "Message.thread_id")
     user = Reference(user_id, "User.id")
 
@@ -106,11 +108,12 @@ class Message(Storm):
     """
     __storm_table__ = 'boards_messages'
     id = Int(primary=True)
-    created = DateTime()
+    created = DateTime(default=datetime.datetime.now())
     last_edited = DateTime(default=None)
     message = Unicode(validator=unicoder)
     thread_id = Int()
     user_id = Int()
     
+    thread = Reference(thread_id, "Thread.id")
     user = Reference(poster_id, "User.id")
 

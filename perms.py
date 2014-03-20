@@ -2,6 +2,10 @@
 Module handling all sorts of permissions
 """
 
+import datetime
+from storm.locals import Storm, Int, DateTime, Unicode
+
+from wld.validator import unicoder
 
 
 class BoardPerms(Storm):
@@ -29,8 +33,8 @@ class BoardPerms(Storm):
     """
     __storm_table__ = 'boards_perms'
     id = Int(primary=True)
-    created = DateTime()
-    name = Unicode()
+    created = DateTime(default=datetime.datetime.now())
+    name = Unicode(validator=unicoder)
 
 
     def __init__(self, name):
