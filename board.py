@@ -4,7 +4,10 @@ Model for Boards and Threads on the Forum
 
 from storm.locals import Storm, Int, DateTime, Unicode
 
+from wld.db import getStore
 from wld.perms import BoardPerms, _LinkBoardPerms
+from wld.user import User
+from wld.validator import unicoder
 
 
 
@@ -22,8 +25,8 @@ class Board(Storm):
     __storm_table__ = 'boards'
     id = Int(primary=True)
     created = DateTime()
-    name = Unicode()
-    description = Unicode()
+    name = Unicode(validator=unicoder)
+    description = Unicode(validator=unicoder)
     
     threads = ReferenceSet(id, "Thread.board_id")
     perms = ReferenceSet(id, "_LinkBoardPerms.board_id", "_LinkBoardPerms.perm_id", "BoardPerms.id")
@@ -80,12 +83,13 @@ class Thread(Storm):
     __storm_table__ = 'boards_threads'
     id = Int(primary=True)
     created = DateTime()
-    name = Unicode()
+    name = Unicode(validator=unicoder)
     board_id = Int()
     user_id = Int()
 
     messages = ReferenceSet(id, "Message.thread_id")
     user = Reference(user_id, "User.id")
+
 
 
 class Message(Storm):
@@ -104,11 +108,9 @@ class Message(Storm):
     id = Int(primary=True)
     created = DateTime()
     last_edited = DateTime(default=None)
-    message = Unicode()
+    message = Unicode(validator=unicoder)
     thread_id = Int()
     user_id = Int()
     
     user = Reference(poster_id, "User.id")
-
-
 
