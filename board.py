@@ -2,9 +2,13 @@
 Model for Boards and Threads on the Forum
 """
 
-from storm.locals import Storm, Int, DateTime, Unicode
+import datetime
+from storm.locals import Storm, Int, DateTime, Unicode, ReferenceSet, Reference
 
+from wld.db import getStore
 from wld.perms import BoardPerms, _LinkBoardPerms
+from wld.user import User
+from wld.validator import unicoder
 
 
 
@@ -21,13 +25,48 @@ class Board(Storm):
     """
     __storm_table__ = 'boards'
     id = Int(primary=True)
-    created = DateTime()
-    name = Unicode()
-    description = Unicode()
+    created = DateTime(default=datetime.datetime.now())
+    name = Unicode(validator=unicoder)
+    description = Unicode(validator=unicoder)
     
     threads = ReferenceSet(id, "Thread.board_id")
     perms = ReferenceSet(id, "_LinkBoardPerms.board_id", "_LinkBoardPerms.perm_id", "BoardPerms.id")
 
+
+    def getJSON(self, extra=False):
+        """
+        Get a JSON representation of my attributes and other useful things
+
+        @param extra: Determines if additional data from other classes will be added
+        """
+        return_json = {
+            'id': self.id,
+            'created': self.created.strftime('%Y-%m-%d %H:%M:%S'),
+            'name': self.name,
+            'description': self.description,
+        }
+
+        if extra:
+            #Other useful things
+            threads = self.threads
+            thread_count = threads.count()
+
+            messages_count = 0
+            for thread in threads:
+                messages = thread.messages.count()
+                messages_count = messages_count + messages
+
+            extra_data = {
+                'topics': thread_count,
+                'messages': messages_count
+            }
+
+            return_json.update(extra_data)
+
+        return return_json
+
+        
+        
 
     def addPermByName(self, perm_name):
         """
@@ -79,13 +118,38 @@ class Thread(Storm):
     """
     __storm_table__ = 'boards_threads'
     id = Int(primary=True)
-    created = DateTime()
-    name = Unicode()
+    created = DateTime(default=datetime.datetime.now())
+    name = Unicode(validator=unicoder)
     board_id = Int()
     user_id = Int()
 
+    board = Reference(board_id, "Board.id")
     messages = ReferenceSet(id, "Message.thread_id")
     user = Reference(user_id, "User.id")
+
+
+    def getJSON(self, extra=False):
+        """
+        Return a json object of my attributes and other useful stuff
+
+        @param extra: Whether info from other classes will be included in the json
+        """
+        return_json = {
+            'id': self.id,
+            'created': self.created,
+            'name': self.name,
+        }
+
+        if extra:
+            user = store.find(User, User.id == self.user_id).one()
+            messages = self.messages
+            extra_data = {
+                'username': user.username,
+            }
+            return_json.update(extra_data)
+
+        return return_json
+
 
 
 class Message(Storm):
@@ -102,13 +166,12 @@ class Message(Storm):
     """
     __storm_table__ = 'boards_messages'
     id = Int(primary=True)
-    created = DateTime()
+    created = DateTime(default=datetime.datetime.now())
     last_edited = DateTime(default=None)
-    message = Unicode()
+    message = Unicode(validator=unicoder)
     thread_id = Int()
     user_id = Int()
     
-    user = Reference(poster_id, "User.id")
-
-
+    thread = Reference(thread_id, "Thread.id")
+    user = Reference(user_id, "User.id")
 
