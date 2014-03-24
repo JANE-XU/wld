@@ -41,7 +41,7 @@ class Board(Storm):
         """
         return_json = {
             'id': self.id,
-            'created': self.created,
+            'created': self.created.strftime('%Y-%m-%d %H:%M:%S'),
             'name': self.name,
             'description': self.description,
         }
